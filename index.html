@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlareGaugeCalculator</title>
+    <title>DDR WORLD フレアゲージ計算機</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.js"></script>
     <style>
         .input-number {
@@ -11,6 +11,7 @@
             padding: 4px 8px;
             border: 1px solid #ccc;
             border-radius: 4px;
+            text-align: right;
         }
         select {
             padding: 4px 8px;
@@ -18,11 +19,25 @@
             border-radius: 4px;
             background-color: white;
         }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        td {
+            padding: 8px 0;
+        }
+        .container {
+            max-width: 500px; /* 最大幅を500pxに制限 */
+            margin: 0 auto;   /* 中央揃え */
+            text-align: center; /* コンテンツ中央揃え */
+        }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
-    <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
-        <h1 class="text-2xl font-bold mb-6 text-center">フレアゲージ計算機</h1>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-lg p-6 container">
+        <h1 class="text-2xl font-bold mb-6">
+            DDR WORLD<br>フレアゲージ計算機
+        </h1>
         
         <div class="mb-6">
             <label class="block mb-2">フレアレベル:</label>
@@ -40,36 +55,49 @@
             </select>
         </div>
 
-        <div class="space-y-4">
-            <div class="flex items-center justify-between">
-                <label id="perfectLabel" class="w-40">PERFECT (-1%):</label>
-                <input type="number" id="perfect" min="0" class="input-number" value="0">
-            </div>
-            
-            <div class="flex items-center justify-between">
-                <label id="greatLabel" class="w-40">GREAT (-2%):</label>
-                <input type="number" id="great" min="0" class="input-number" value="0">
-            </div>
-            
-            <div class="flex items-center justify-between">
-                <label id="goodLabel" class="w-40">GOOD (-10%):</label>
-                <input type="number" id="good" min="0" class="input-number" value="0">
-            </div>
-            
-            <div class="flex items-center justify-between">
-                <label id="missLabel" class="w-40">MISS (-30%):</label>
-                <input type="number" id="miss" min="0" class="input-number" value="0">
-            </div>
+  	<table class="mx-auto">
+            <tr>
+                <td id="perfectLabel">PERFECT (-1%):</td>
+                <td><input type="number" id="perfect" min="0" max="9999" class="input-number" value="0"></td>
+            </tr>
+            <tr>
+                <td id="greatLabel">GREAT (-2%):</td>
+                <td><input type="number" id="great" min="0" max="9999" class="input-number" value="0"></td>
+            </tr>
+            <tr>
+                <td id="goodLabel">GOOD (-10%):</td>
+                <td><input type="number" id="good" min="0" max="9999" class="input-number" value="0"></td>
+            </tr>
+            <tr>
+                <td id="missLabel">MISS (-30%):</td>
+                <td><input type="number" id="miss" min="0" max="9999" class="input-number" value="0"></td>
+            </tr>
+        </table>
 
-            <div class="mt-6 pt-4 border-t">
-                <div class="flex items-center justify-between">
-                    <span class="text-lg font-bold">残りゲージ:</span>
-                    <span id="remaining" class="text-lg font-bold">100.0%</span>
-                </div>
+        <h2 class="mt-6 pt-4 border-t">
+            <div class="flex items-center justify-center">
+                <span class="text-lg font-bold">残りゲージ:</span>
+                <span id="remaining" class="text-lg font-bold ml-2">100.0%</span>
             </div>
-        </div>
+        </h2>
+
+        <p class="text-sm text-gray-500 mt-4 text-center">
+	使い方
+        </p>
+
+        <p class="text-sm text-gray-500 mt-4 text-center">
+        判定ごとの入力値を記入してください。<br>
+	フレアレベルI~IVは暫定値です。
+        </p>
+
+        <p class="text-sm text-gray-500 mt-4 text-center">
+	参考:BEMANIWiki 2nd<br>
+　      更新日: <span id="updateDate"></span>
+        </p>
+
     </div>
-
+    
+ 
     <script>
         const flareMultipliers = {
             'EX': { perfect: 1, great: 2, good: 10, miss: 30 },
@@ -103,24 +131,24 @@
             const good = parseFloat(document.getElementById('good').value) || 0;
             const miss = parseFloat(document.getElementById('miss').value) || 0;
 
-            const remaining = Math.max(0, 100 - 
+            const remaining = 100 - 
                 perfect * multipliers.perfect - 
                 great * multipliers.great - 
                 good * multipliers.good - 
-                miss * multipliers.miss
-            );
+                miss * multipliers.miss;
 
             const remainingElement = document.getElementById('remaining');
             remainingElement.textContent = `${remaining.toFixed(1)}%`;
             
-            if (remaining >= 70) {
+            if (remaining >= 0) {
                 remainingElement.style.color = 'green';
-            } else if (remaining >= 30) {
-                remainingElement.style.color = 'orange';
             } else {
                 remainingElement.style.color = 'red';
             }
         }
+
+        // 更新日の設定
+        document.getElementById('updateDate').textContent = new Date().toLocaleDateString('ja-JP');
 
         // イベントリスナーの設定
         document.getElementById('flareLevel').addEventListener('change', () => {
