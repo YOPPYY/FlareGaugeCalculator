@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlareGaugeCalculator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.js"></script>
+    <style>
+        .input-number {
+            width: 100px;
+            padding: 4px 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        select {
+            padding: 4px 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: white;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+        <h1 class="text-2xl font-bold mb-6 text-center">フレアゲージ計算機</h1>
+        
+        <div class="mb-6">
+            <label class="block mb-2">フレアレベル:</label>
+            <select id="flareLevel" class="w-full mb-4">
+                <option value="EX">EX</option>
+                <option value="9">IX (9)</option>
+                <option value="8">VIII (8)</option>
+                <option value="7">VII (7)</option>
+                <option value="6">VI (6)</option>
+                <option value="5">V (5)</option>
+                <option value="4">IV (4)</option>
+                <option value="3">III (3)</option>
+                <option value="2">II (2)</option>
+                <option value="1">I (1)</option>
+            </select>
+        </div>
+
+        <div class="space-y-4">
+            <div class="flex items-center justify-between">
+                <label id="perfectLabel" class="w-40">PERFECT (-1%):</label>
+                <input type="number" id="perfect" min="0" class="input-number" value="0">
+            </div>
+            
+            <div class="flex items-center justify-between">
+                <label id="greatLabel" class="w-40">GREAT (-2%):</label>
+                <input type="number" id="great" min="0" class="input-number" value="0">
+            </div>
+            
+            <div class="flex items-center justify-between">
+                <label id="goodLabel" class="w-40">GOOD (-10%):</label>
+                <input type="number" id="good" min="0" class="input-number" value="0">
+            </div>
+            
+            <div class="flex items-center justify-between">
+                <label id="missLabel" class="w-40">MISS (-30%):</label>
+                <input type="number" id="miss" min="0" class="input-number" value="0">
+            </div>
+
+            <div class="mt-6 pt-4 border-t">
+                <div class="flex items-center justify-between">
+                    <span class="text-lg font-bold">残りゲージ:</span>
+                    <span id="remaining" class="text-lg font-bold">100.0%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const flareMultipliers = {
+            'EX': { perfect: 1, great: 2, good: 10, miss: 30 },
+            '9': { perfect: 0, great: 2, good: 10, miss: 30 },
+            '8': { perfect: 0, great: 1.64, good: 8.2, miss: 26 },
+            '7': { perfect: 0, great: 1.28, good: 6.4, miss: 22 },
+            '6': { perfect: 0, great: 0.92, good: 4.6, miss: 18 },
+            '5': { perfect: 0, great: 0.74, good: 3.7, miss: 16 },
+            '4': { perfect: 0, great: 0.29, good: 1.45, miss: 11 },
+            '3': { perfect: 0, great: 0.12, good: 0.6, miss: 4.5 },
+            '2': { perfect: 0, great: 0.11, good: 0.55, miss: 3 },
+            '1': { perfect: 0, great: 0.1, good: 0.5, miss: 1.5 }
+        };
+
+        function updateLabels() {
+            const level = document.getElementById('flareLevel').value;
+            const multipliers = flareMultipliers[level];
+            
+            document.getElementById('perfectLabel').textContent = `PERFECT (-${multipliers.perfect}%):`;
+            document.getElementById('greatLabel').textContent = `GREAT (-${multipliers.great}%):`;
+            document.getElementById('goodLabel').textContent = `GOOD (-${multipliers.good}%):`;
+            document.getElementById('missLabel').textContent = `MISS (-${multipliers.miss}%):`;
+        }
+
+        function calculateRemaining() {
+            const level = document.getElementById('flareLevel').value;
+            const multipliers = flareMultipliers[level];
+            
+            const perfect = parseFloat(document.getElementById('perfect').value) || 0;
+            const great = parseFloat(document.getElementById('great').value) || 0;
+            const good = parseFloat(document.getElementById('good').value) || 0;
+            const miss = parseFloat(document.getElementById('miss').value) || 0;
+
+            const remaining = Math.max(0, 100 - 
+                perfect * multipliers.perfect - 
+                great * multipliers.great - 
+                good * multipliers.good - 
+                miss * multipliers.miss
+            );
+
+            const remainingElement = document.getElementById('remaining');
+            remainingElement.textContent = `${remaining.toFixed(1)}%`;
+            
+            if (remaining >= 70) {
+                remainingElement.style.color = 'green';
+            } else if (remaining >= 30) {
+                remainingElement.style.color = 'orange';
+            } else {
+                remainingElement.style.color = 'red';
+            }
+        }
+
+        // イベントリスナーの設定
+        document.getElementById('flareLevel').addEventListener('change', () => {
+            updateLabels();
+            calculateRemaining();
+        });
+
+        ['perfect', 'great', 'good', 'miss'].forEach(id => {
+            document.getElementById(id).addEventListener('input', calculateRemaining);
+        });
+
+        // 初期表示の設定
+        updateLabels();
+        calculateRemaining();
+    </script>
+</body>
+</html>
